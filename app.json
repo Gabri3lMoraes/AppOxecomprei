@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "AppOxe",
+    "slug": "AppOxe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/Oxe.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/Oxe.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+       "NSLocationWhenInUseUsageDescription": "Precisamos da sua localização para mostrar produtos próximos."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/Oxe.png",
+        "backgroundColor": "#ffffff",
+         "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font"
+    ]
+  }
+
