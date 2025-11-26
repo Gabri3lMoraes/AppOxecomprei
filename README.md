@@ -43,7 +43,10 @@ Context API (em breve)
 
 Firebase / Backend (planejado)
 
-[Oxê Comprei Demo](./assets/apps_demo.gif)
+## 📱 Demonstração do App
+
+![Demonstração do App](assets/apps_demo.gif)
+
 
 
 
