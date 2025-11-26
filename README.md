@@ -43,6 +43,10 @@ Context API (em breve)
 
 Firebase / Backend (planejado)
 
+[Oxê Comprei Demo](./assets/apps.mp4)
+
+
+
 📂 Estrutura do Projeto
 /screen
   ├── Login.tsx
