@@ -4,32 +4,25 @@
     "slug": "AppOxe",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Oxe.png",
+    "icon": "./assets/logooxe.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/Oxe.png",
+      "image": "./assets/logooxe.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
-       "NSLocationWhenInUseUsageDescription": "Precisamos da sua localização para mostrar produtos próximos."
-      }
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/Oxe.png",
-        "backgroundColor": "#ffffff",
-         "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
-      },
-      "edgeToEdgeEnabled": true
+        "foregroundImage": "./assets/logooxe.png",
+        "backgroundColor": "#ffffff"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-font"
-    ]
+    "plugins": ["expo-font"]
   }
-
+}

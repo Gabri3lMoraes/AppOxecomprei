@@ -92,7 +92,7 @@ export default function LoginScreen() {
       </TouchableOpacity>
 
       {/* Botão de ir para cadastro */}
-      <Botao2 onPress={() => navigation.navigate("Registro" as never)} />
+      <Botao2 onPress={() => navigation.navigate("Pos" as never)} />
 
       <Text style={styles.forguet}>Esqueceu a senha?</Text>
       <View style={styles.linha}></View>

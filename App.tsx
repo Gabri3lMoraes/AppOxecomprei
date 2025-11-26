@@ -1,25 +1,34 @@
+import React, { useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-
-import Login from "./screen/login"; // tela de login
-import Home from "./screen/home"; // tela home
-import Registro from "./screen/Registro"; // tela de registro\
+import Splash from "./splash";
+import Login from "./screen/login";
+import Home from "./screen/home";
+import Registro from "./screen/Registro";
 import PosRegistro from "./screen/Posregistro";
-import Teladebemvindo from "./screen/Welcome"
+import Teladebemvindo from "./screen/Welcome";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  return (
-   <NavigationContainer>
-  <Stack.Navigator id={undefined}  initialRouteName="Wel">
-    <Stack.Screen name="Login" options={{ headerShown: false}}  component={Login} />
-    <Stack.Screen name="Home" component={Home} options={{ headerShown: false}} />
-    <Stack.Screen name="Registro" options={{ headerShown: false}} component={Registro} />
-    <Stack.Screen name="Pos" options={{ headerShown: false}} component={PosRegistro} />
-     <Stack.Screen name="Wel" options={{ headerShown: false}} component={Teladebemvindo} />
-  </Stack.Navigator>
-</NavigationContainer>
+  const [isSplashVisible, setSplashVisible] = useState(true);
 
-  );
+  return (
+  <>
+    {isSplashVisible ? (
+      <Splash onFinish={() => setSplashVisible(false)} />
+    ) : (
+      <NavigationContainer>
+        <Stack.Navigator id={undefined} initialRouteName="Wel" screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="Registro" component={Registro} />
+          <Stack.Screen name="Pos" component={PosRegistro} />
+          <Stack.Screen name="Wel" component={Teladebemvindo} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    )}
+  </>
+);
+
 }

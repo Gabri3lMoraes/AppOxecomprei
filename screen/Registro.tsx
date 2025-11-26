@@ -135,10 +135,14 @@ export default function Registro() {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={navigation.goBack}>
+        <Text style={{position: 'absolute', right: 160, top: 15, fontWeight: 'bold'}}> Voltar</Text>
+      </TouchableOpacity>
       <Text style={styles.titulo}>Cadastro</Text>
 
       {etapa === 1 && (
         <View style={styles.form}>
+          
           <Text style={styles.label}>Nome Completo</Text>
           <TextInput
             style={styles.input}
@@ -173,12 +177,12 @@ export default function Registro() {
           <Image
             style={{
               position: "absolute",
-              bottom: -450,
-              width: "100%",
+              bottom: -550,
+              width: "150%",
               height: 400,
             }}
             resizeMode="contain"
-            source={require("../assets/4.png")}
+            source={require("../assets/co.png")}
           />
         </View>
       )}

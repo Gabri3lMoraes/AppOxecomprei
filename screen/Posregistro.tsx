@@ -43,6 +43,7 @@ export default function LoginScreen() {
   
   return (
     <View style={styles.container}>
+
       <View style={styles.escolha}>
         <Text style={styles.Titulo}> Escolha uma opção</Text>
       </View>
@@ -60,7 +61,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#f7e2cdff",
     alignItems: "center",
     height: 250,
     flexDirection: 'column',

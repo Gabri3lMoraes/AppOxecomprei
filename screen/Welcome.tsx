@@ -1,6 +1,7 @@
 import { Text, StyleSheet, View, ImageBackground, TouchableOpacity } from "react-native";
 import { useFonts } from "expo-font";
 import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 export default function Welcomescreen(){
     const [fontsLoaded] = useFonts({
         "Poppins-Regular" : require("../assets/fonts/Poppins-Regular.ttf"),
@@ -8,11 +9,23 @@ export default function Welcomescreen(){
          "Inter-Bold" : require("../assets/fonts/Inter_24pt-Bold.ttf"),
     })
 
+
+type NavigationProps = NativeStackNavigationProp<RootStackParamList>;
+
+const navigation = useNavigation<NavigationProps>();
+
+type RootStackParamList = {
+  Login: undefined;
+  Home: undefined;
+  Registro: undefined;
+  Pos: undefined;
+  Wel: undefined;
+};
+
     if(!fontsLoaded){
         return null;
     }
 
-    const navigation = useNavigation();
 
     const handlerregistro = () =>{
         navigation.navigate("Pos");
