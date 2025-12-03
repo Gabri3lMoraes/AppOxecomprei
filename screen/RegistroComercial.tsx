@@ -7,27 +7,31 @@ import {
   Image,
   Switch,
   Alert,
-  ActivityIndicator,
 } from "react-native";
 import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import { db } from "./firebaseConfig";
-import { useFonts } from "expo-font";
 import { TextInputMask } from "react-native-masked-text";
+import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
 
-export default function Registro() {
-
+export default function RegistroComerciante() {
   const navigation = useNavigation();
   const [etapa, setEtapa] = useState(1);
 
-  // Etapa 1
+  // Etapa 1 — Dados pessoais + empresa básica
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [cnpj, setCnpj] = useState("");
+  const [nomeLoja, setNomeLoja] = useState("");
 
-  // Etapa 2
+  // Logo
+  const [logo, setLogo] = useState<string | null>(null);
+
+  // Etapa 2 — Endereço + senha
   const [cep, setCep] = useState("");
   const [rua, setRua] = useState("");
   const [bairro, setBairro] = useState("");
@@ -40,31 +44,55 @@ export default function Registro() {
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled((prev) => !prev);
 
-  const handleProximo = async () => {
-  if (!nome || !email || !telefone) {
-    alert("Preencha todos os campos antes de continuar!");
-    return;
-  }
+  // 📌 Selecionar LOGO
+  const selecionarLogo = async () => {
+    let perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-  try {
-    // 🔎 Verifica se o e-mail já existe no Firestore
-    const q = query(collection(db, "clientes"), where("email", "==", email));
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      alert("Este e-mail já está cadastrado! Use outro para continuar.");
+    if (!perm.granted) {
+      alert("Permita o acesso à galeria para enviar a logo!");
       return;
     }
 
-    setEtapa(2);
-  } catch (error) {
-    console.error("Erro ao verificar e-mail:", error);
-    alert("Erro ao verificar e-mail. Tente novamente.");
-  }
-};
+    let img = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
 
+    if (!img.canceled) {
+      setLogo(img.assets[0].uri);
+    }
+  };
 
-  // Buscar endereço automaticamente pelo CEP
+  // Etapa 1 → Etapa 2
+  const handleProximo = async () => {
+    if (!nome || !email || !telefone || !cnpj || !nomeLoja) {
+      alert("Preencha todos os campos antes de continuar!");
+      return;
+    }
+
+    // Validar CNPJ
+    const cnpjLimpo = cnpj.replace(/\D/g, "");
+    if (cnpjLimpo.length !== 14) {
+      alert("CNPJ inválido!");
+      return;
+    }
+
+    try {
+      const q = query(collection(db, "comerciantes"), where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        alert("Este e-mail já está cadastrado!");
+        return;
+      }
+
+      setEtapa(2);
+    } catch (error) {
+      alert("Erro ao verificar e-mail.");
+    }
+  };
+
+  // Buscar endereço por CEP
   const buscarEndereco = async (cepDigitado: string) => {
     const cepLimpo = cepDigitado.replace(/\D/g, "");
     if (cepLimpo.length !== 8) return;
@@ -82,71 +110,74 @@ export default function Registro() {
       setBairro(data.bairro || "");
       setCidade(data.localidade || "");
       setEstado(data.uf || "");
-    } catch (error) {
-      console.error("Erro ao buscar CEP:", error);
-      Alert.alert("Erro ao buscar o CEP!");
+    } catch {
+      Alert.alert("Erro ao buscar CEP");
     }
   };
 
   const handleCadastrar = async () => {
-  if (!cep || !rua || !bairro || !numero || !cidade || !estado || !senha || !confirmarSenha) {
-    alert("Preencha todos os campos!");
-    return;
-  }
-
-  if (senha !== confirmarSenha) {
-    alert("As senhas não coincidem!");
-    return;
-  }
-
-  if (!isEnabled) {
-    alert("Aceite os termos para continuar!");
-    return;
-  }
-
-  try {
-    // 🔎 Verifica se já existe um cliente com o mesmo e-mail
-    const q = query(collection(db, "clientes"), where("email", "==", email));
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      alert("Este e-mail já está cadastrado!");
+    if (
+      !cep ||
+      !rua ||
+      !bairro ||
+      !numero ||
+      !cidade ||
+      !estado ||
+      !senha ||
+      !confirmarSenha
+    ) {
+      alert("Preencha todos os campos!");
       return;
     }
 
-    // 🟢 Se não existir, cadastra o novo cliente
-    await addDoc(collection(db, "clientes"), {
-      nome,
-      email,
-      telefone,
-      endereco: { cep, rua, numero, bairro, cidade, estado },
-      senha,
-      dataCriacao: new Date().toISOString(),
-    });
+    if (senha !== confirmarSenha) {
+      alert("As senhas não coincidem!");
+      return;
+    }
 
-    alert("Cadastro realizado com sucesso!");
-    navigation.navigate("Login" as never);
-  } catch (error) {
-    console.error("Erro ao salvar:", error);
-    alert("Erro ao salvar no banco de dados!");
-  }
-};
+    if (!isEnabled) {
+      alert("Aceite os termos para continuar!");
+      return;
+    }
 
+    try {
+      // Registrar comerciante no Firebase
+      await addDoc(collection(db, "comerciantes"), {
+        nome,
+        email,
+        telefone,
+        cnpj,
+        nomeLoja,
+        logo: logo || null,
+        endereco: { cep, rua, numero, bairro, cidade, estado },
+        senha,
+        criadoEm: new Date().toISOString(),
+      });
+
+      alert("Cadastro realizado com sucesso!");
+      navigation.navigate("Login" as never);
+    } catch (error) {
+      alert("Erro ao salvar!");
+    }
+  };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={navigation.goBack}>
-        <Text style={{position: 'absolute', right: 140, top: 15, fontWeight: 'bold'}}> Voltar</Text>
+        <Text style={styles.voltar}>Voltar</Text>
       </TouchableOpacity>
-      <Text style={styles.titulo}>Cadastro</Text>
 
+      <Text style={styles.titulo}>Cadastro do Comerciante</Text>
+
+      {/* ====================================================
+                 ETAPA 1
+      ==================================================== */}
       {etapa === 1 && (
         <View style={styles.form}>
-          
           <Text style={styles.label}>Nome Completo</Text>
           <TextInput
             style={styles.input}
-            placeholder="Digite seu nome"
+            placeholder="Seu nome"
             value={nome}
             onChangeText={setNome}
           />
@@ -162,47 +193,68 @@ export default function Registro() {
           <Text style={styles.label}>Telefone</Text>
           <TextInputMask
             type={"cel-phone"}
-            options={{ maskType: "BRL", withDDD: true, dddMask: "(99)" }}
             style={styles.input}
-            placeholder="Digite seu telefone"
             value={telefone}
-            keyboardType="phone-pad"
+            placeholder="(00) 00000-0000"
             onChangeText={setTelefone}
           />
+
+          <Text style={styles.label}>CNPJ</Text>
+          <TextInputMask
+            type={"cnpj"}
+            style={styles.input}
+            placeholder="00.000.000/0000-00"
+            value={cnpj}
+            onChangeText={setCnpj}
+          />
+
+          <Text style={styles.label}>Nome da Loja</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ex: Loja do João"
+            value={nomeLoja}
+            onChangeText={setNomeLoja}
+          />
+
+          {/* LOGO */}
+          <Text style={styles.label}>Logo da Loja</Text>
+          <TouchableOpacity style={styles.logoBtn} onPress={selecionarLogo}>
+            <Text style={styles.logoText}>
+              {logo ? "Trocar Logo" : "Enviar Logo"}
+            </Text>
+          </TouchableOpacity>
+
+          {logo && (
+            <Image
+              source={{ uri: logo }}
+              style={{ width: 120, height: 120, marginTop: 10, borderRadius: 10 }}
+            />
+          )}
 
           <TouchableOpacity style={styles.botao} onPress={handleProximo}>
             <Text style={styles.botaoTexto}>Prosseguir ➜</Text>
           </TouchableOpacity>
-
-          <Image
-            style={{
-              position: "absolute",
-              bottom: -450,
-              width: "150%",
-              height: 400,
-            }}
-            resizeMode="contain"
-            source={require("../assets/co.png")}
-          />
         </View>
       )}
 
+      {/* ====================================================
+                 ETAPA 2
+      ==================================================== */}
       {etapa === 2 && (
         <View style={styles.form}>
           <Text style={styles.label}>CEP</Text>
           <TextInputMask
             type={"zip-code"}
             style={styles.input}
-            placeholder="Digite seu CEP"
+            placeholder="00000-000"
             value={cep}
-            keyboardType="numeric"
-            onChangeText={(valor) => {
-              setCep(valor);
-              buscarEndereco(valor);
+            onChangeText={(t) => {
+              setCep(t);
+              buscarEndereco(t);
             }}
           />
 
-          {/* Rua e Número lado a lado */}
+          {/* Rua e Número */}
           <View style={styles.row}>
             <View style={[styles.col, { flex: 2 }]}>
               <Text style={styles.label}>Rua</Text>
@@ -213,19 +265,20 @@ export default function Registro() {
                 placeholder="Rua"
               />
             </View>
+
             <View style={[styles.col, { flex: 1, marginLeft: 8 }]}>
               <Text style={styles.label}>Número</Text>
               <TextInput
                 style={styles.input}
                 value={numero}
-                onChangeText={setNumero}
                 keyboardType="numeric"
+                onChangeText={setNumero}
                 placeholder="N°"
               />
             </View>
           </View>
 
-          {/* Bairro, Cidade e Estado lado a lado */}
+          {/* Bairro, Cidade, UF */}
           <View style={styles.row}>
             <View style={[styles.col, { flex: 1.5 }]}>
               <Text style={styles.label}>Bairro</Text>
@@ -236,6 +289,7 @@ export default function Registro() {
                 placeholder="Bairro"
               />
             </View>
+
             <View style={[styles.col, { flex: 1.5, marginLeft: 8 }]}>
               <Text style={styles.label}>Cidade</Text>
               <TextInput
@@ -245,13 +299,14 @@ export default function Registro() {
                 placeholder="Cidade"
               />
             </View>
-            <View style={[styles.col, { flex: 0.5, marginLeft: 8 }]}>
+
+            <View style={[styles.col, { flex: 0.7, marginLeft: 8 }]}>
               <Text style={styles.label}>UF</Text>
               <TextInput
                 style={styles.input}
+                maxLength={2}
                 value={estado}
                 onChangeText={setEstado}
-                maxLength={2}
                 placeholder="PE"
               />
             </View>
@@ -260,18 +315,16 @@ export default function Registro() {
           <Text style={styles.label}>Senha</Text>
           <TextInput
             style={styles.input}
-            placeholder="Digite sua senha"
-            value={senha}
             secureTextEntry
+            value={senha}
             onChangeText={setSenha}
           />
 
           <Text style={styles.label}>Confirmar Senha</Text>
           <TextInput
             style={styles.input}
-            placeholder="Confirme sua senha"
-            value={confirmarSenha}
             secureTextEntry
+            value={confirmarSenha}
             onChangeText={setConfirmarSenha}
           />
 
@@ -300,6 +353,12 @@ export default function Registro() {
 }
 
 const styles = StyleSheet.create({
+  voltar: {
+    position: "absolute",
+    right: 140,
+    top: 1,
+    fontWeight: "bold",
+  },
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",
@@ -307,10 +366,10 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   titulo: {
-    fontSize: 37,
+    fontSize: 22,
     marginBottom: 30,
     color: "#0e0d0dff",
-    fontFamily: "Xilosa",
+    fontWeight: "bold",
   },
   form: {
     width: "90%",
@@ -319,7 +378,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     width: "100%",
-    justifyContent: "space-between",
   },
   col: {
     flex: 1,
@@ -327,10 +385,8 @@ const styles = StyleSheet.create({
   label: {
     alignSelf: "flex-start",
     fontSize: 14,
-    color: "#000",
-    marginBottom: 5,
     marginTop: 10,
-    width: '100%'
+    marginBottom: 5,
   },
   input: {
     backgroundColor: "#fff",
@@ -338,7 +394,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     elevation: 3,
-    width: '100%'
+    width: "100%",
   },
   botao: {
     backgroundColor: "#FF6A00",
@@ -353,16 +409,28 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  logoBtn: {
+    width: "100%",
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 5,
+    alignItems: "center",
+    elevation: 3
+  },
+  logoText: {
+    color: "#FF6A00",
+    fontSize: 15,
+    fontWeight: "bold",
+  },
   contrato: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 15,
   },
   politica: {
     fontSize: 12,
-    color: "#000",
     marginLeft: 8,
-    flexShrink: 1,
   },
   marcador: {
     color: "#FF6A00",

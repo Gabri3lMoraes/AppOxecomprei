@@ -7,6 +7,7 @@ import Home from "./screen/home";
 import Registro from "./screen/Registro";
 import PosRegistro from "./screen/Posregistro";
 import Teladebemvindo from "./screen/Welcome";
+import RegistroComerciante from "./screen/RegistroComercial";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,7 @@ export default function App() {
           <Stack.Screen name="Registro" component={Registro} />
           <Stack.Screen name="Pos" component={PosRegistro} />
           <Stack.Screen name="Wel" component={Teladebemvindo} />
+           <Stack.Screen name="RegistroComerciante" component={RegistroComerciante} />
         </Stack.Navigator>
       </NavigationContainer>
     )}
