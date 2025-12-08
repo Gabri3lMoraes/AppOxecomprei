@@ -29,12 +29,19 @@ export default function LoginScreen() {
     Xilosa: require("../assets/fonts/xilosa_.ttf"),
   });
 
-  const toggleSwitch = () => setIsEnabled(prev => !prev);
+  const toggleSwitch = () => setIsEnabled((prev) => !prev);
   if (!fontsLoaded) return null;
 
   const handleLogin = async () => {
     if (!email || !senha) {
       Alert.alert("Erro", "Preencha todos os campos!");
+      return;
+    }
+
+    // 🔥 LOGIN DIRETO ADMIN 
+    if (email === "admin" && senha === "admin") {
+      Alert.alert("Admin", "Login de administrador!");
+      navigation.navigate("Home" as never);
       return;
     }
 
@@ -49,7 +56,7 @@ export default function LoginScreen() {
 
       if (!querySnapshot.empty) {
         Alert.alert("Sucesso", "Login realizado com sucesso!");
-        navigation.navigate("Home" as never); // 👈 Redireciona para tela principal
+        navigation.navigate("Home" as never);
       } else {
         Alert.alert("Erro", "Email ou senha incorretos!");
       }
@@ -104,6 +111,7 @@ export default function LoginScreen() {
             <Text style={styles.socialText}>CONTINUAR COM GOOGLE</Text>
           </View>
         </TouchableOpacity>
+
         <TouchableOpacity>
           <View style={styles.socialButton}>
             <Image source={logo2} style={styles.socialIcon} />
@@ -142,10 +150,13 @@ export default function LoginScreen() {
           right: 0,
         }}
       />
+
       <StatusBar style="dark" />
     </View>
   );
 }
+
+// ---------------------- STYLES ----------------------
 
 const styles = StyleSheet.create({
   container: {
@@ -246,8 +257,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 60,
   },
   forguet: {
-  color: "#6E6868",
-  opacity: 0.8,
-  paddingTop: 5,
-},
+    color: "#6E6868",
+    opacity: 0.8,
+    paddingTop: 5,
+  },
 });

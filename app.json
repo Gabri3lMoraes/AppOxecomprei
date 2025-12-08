@@ -18,11 +18,19 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/logooxe.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.noragami3ds.AppOxe"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font"]
+    "plugins": [
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "62e9dfd8-dc8b-4c34-8859-fba8e820617f"
+      }
+    }
   }
 }
